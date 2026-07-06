@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   getAlertFeat, hasAlert, isIncapacitated, isWindowOpen,
-  getSwapCandidates, swapInitiative, pickResponsibleUser,
+  getSwapCandidates, swapInitiative, pickResponsibleUser, pickPromptCombatant,
 } from "../scripts/swap.js";
 
 const mkActor = ({ items = [], statuses = [], perm } = {}) => ({
@@ -70,4 +70,33 @@ test("pickResponsibleUser prefers active non-GM owners (lowest id), else active 
   assert.equal(pickResponsibleUser(actor, { users: [u2, u1, gm], activeGM: gm }).id, "u1");
   const offline = { id: "u3", active: false, isGM: false, owner: true };
   assert.equal(pickResponsibleUser(actor, { users: [offline, gm], activeGM: gm }).id, "g");
+});
+
+test("pickPromptCombatant gates on the dnd5e (actor, combatants) shape + prompter/candidate/window", () => {
+  const warpeyActor = {
+    items: [{ type: "feat", system: { identifier: "alert" } }],
+    hasPlayerOwner: true, statuses: new Set(), testUserPermission: () => false,
+  };
+  const gm = { id: "g", active: true, isGM: true };
+  const owner = { id: "wc", initiative: 8, token: { disposition: 1 }, actor: warpeyActor };
+  const ally = { id: "xc", initiative: 19, token: { disposition: 1 }, actor: { statuses: new Set() } };
+  const combat = { id: "cbt", started: false, combatants: [owner, ally] };
+  const base = {
+    actor: warpeyActor, combatants: [owner], combat,
+    currentUserId: "g", users: [gm], activeGM: gm, isPrompted: () => false,
+  };
+  // happy path: GM is the fallback prompter, ally is a candidate -> prompt for the owner's combatant
+  assert.equal(pickPromptCombatant(base)?.id, "wc");
+  // no eligible ally in the combat -> null
+  assert.equal(pickPromptCombatant({ ...base, combat: { id: "c2", started: false, combatants: [owner] } }), null);
+  // combat already started -> null
+  assert.equal(pickPromptCombatant({ ...base, combat: { ...combat, started: true } }), null);
+  // this client isn't the chosen prompter -> null
+  assert.equal(pickPromptCombatant({ ...base, currentUserId: "someone-else" }), null);
+  // already prompted this combat -> null
+  assert.equal(pickPromptCombatant({ ...base, isPrompted: () => true }), null);
+  // GM-only actor (no player owner) -> null
+  assert.equal(pickPromptCombatant({ ...base, actor: { ...warpeyActor, hasPlayerOwner: false } }), null);
+  // actor without Alert -> null
+  assert.equal(pickPromptCombatant({ ...base, actor: { ...warpeyActor, items: [] } }), null);
 });
