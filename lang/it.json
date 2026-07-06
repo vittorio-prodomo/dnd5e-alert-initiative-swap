@@ -5,7 +5,7 @@
   "dnd5e-alert-initiative-swap.dialog.swap": "Scambia iniziativa",
   "dnd5e-alert-initiative-swap.dialog.colName": "Nome",
   "dnd5e-alert-initiative-swap.dialog.colInit": "Iniziativa",
-  "dnd5e-alert-initiative-swap.prompt.title": "Talento Allerta",
+  "dnd5e-alert-initiative-swap.prompt.title": "Allerta — {name}",
   "dnd5e-alert-initiative-swap.prompt.body": "Hai il talento Allerta! Puoi scambiare la tua iniziativa con un alleato consenziente. Scambiare ora?",
   "dnd5e-alert-initiative-swap.chat.swapped": "<strong>Allerta</strong> — {a} ⇄ {b}: iniziativa {aInit} ↔ {bInit}",
   "dnd5e-alert-initiative-swap.notify.windowClosed": "Allerta: l'iniziativa si può scambiare solo dopo averla tirata, prima che il combattimento inizi.",

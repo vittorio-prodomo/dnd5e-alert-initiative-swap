@@ -76,11 +76,14 @@ export async function promptAllySelection(candidates, ownerName) {
   return candidates.find((c) => c.id === choice) ?? null;
 }
 
-/** Yes/No prompt after rolling initiative. */
-export async function promptSwapYesNo() {
+/**
+ * Yes/No prompt after rolling initiative.
+ * @param {string} [ownerName]  Alert owner's token/character name, for the dialog title.
+ */
+export async function promptSwapYesNo(ownerName) {
   const DialogV2 = foundry.applications.api.DialogV2;
   return !!(await DialogV2.confirm({
-    window: { title: L("prompt.title") },
+    window: { title: L("prompt.title", { name: ownerName ?? "" }) },
     content: `<p>${L("prompt.body")}</p>`,
     rejectClose: false,
   }).catch(() => false));

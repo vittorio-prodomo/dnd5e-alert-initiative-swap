@@ -5,7 +5,7 @@
   "dnd5e-alert-initiative-swap.dialog.swap": "Swap Initiative",
   "dnd5e-alert-initiative-swap.dialog.colName": "Name",
   "dnd5e-alert-initiative-swap.dialog.colInit": "Initiative",
-  "dnd5e-alert-initiative-swap.prompt.title": "Alert Feat",
+  "dnd5e-alert-initiative-swap.prompt.title": "Alert — {name}",
   "dnd5e-alert-initiative-swap.prompt.body": "You have the Alert feat! You can swap your initiative with a willing ally. Swap now?",
   "dnd5e-alert-initiative-swap.chat.swapped": "<strong>Alert</strong> — {a} ⇄ {b}: initiative {aInit} ↔ {bInit}",
   "dnd5e-alert-initiative-swap.notify.windowClosed": "Alert: initiative can only be swapped after rolling, before combat starts.",

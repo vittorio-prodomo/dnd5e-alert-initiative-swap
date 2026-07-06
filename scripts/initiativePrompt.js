@@ -41,8 +41,9 @@ async function flush() {
     if (!targets.length) continue;
     // Reserve synchronously so a concurrent update can't double-prompt.
     for (const { combatant: c } of targets) promptedThisSession.add(`${cid}:${c.id}`);
-    for (const { actor } of targets) {
-      if (await promptSwapYesNo()) await runSwapFlow(actor, { combat });
+    for (const { combatant, actor } of targets) {
+      const ownerName = combatant.token?.name ?? actor.name;
+      if (await promptSwapYesNo(ownerName)) await runSwapFlow(actor, { combat });
     }
   }
 }
