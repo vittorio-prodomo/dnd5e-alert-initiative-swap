@@ -1,0 +1,14 @@
+{
+  "dnd5e-alert-initiative-swap.button.swap": "Swap Initiative (Alert)",
+  "dnd5e-alert-initiative-swap.dialog.pickTitle": "Alert — Swap Initiative",
+  "dnd5e-alert-initiative-swap.dialog.pickBody": "Choose a willing ally to swap initiative with:",
+  "dnd5e-alert-initiative-swap.dialog.candidate": "{name} — initiative {init}",
+  "dnd5e-alert-initiative-swap.prompt.title": "Alert Feat",
+  "dnd5e-alert-initiative-swap.prompt.body": "You have the Alert feat! You can swap your initiative with a willing ally. Swap now?",
+  "dnd5e-alert-initiative-swap.chat.swapped": "<strong>Alert</strong> — {a} ⇄ {b}: initiative {aInit} ↔ {bInit}",
+  "dnd5e-alert-initiative-swap.notify.windowClosed": "Alert: initiative can only be swapped after rolling, before combat starts.",
+  "dnd5e-alert-initiative-swap.notify.noAllies": "Alert: no eligible allies to swap initiative with.",
+  "dnd5e-alert-initiative-swap.notify.noGM": "Alert: a GM must be online to swap initiative.",
+  "dnd5e-alert-initiative-swap.settings.autoPrompt.name": "Prompt Alert owners to swap initiative",
+  "dnd5e-alert-initiative-swap.settings.autoPrompt.hint": "After a player-owned character with the Alert feat rolls initiative (before combat starts), ask whether to swap with a willing ally."
+}
