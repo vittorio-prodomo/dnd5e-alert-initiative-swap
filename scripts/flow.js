@@ -9,22 +9,43 @@ export function getOwnerCombatant(actor, combat = game.combat) {
   return combat.combatants.find((c) => c.actor?.id === actor.id) ?? null;
 }
 
-/** Ask the owner to pick an ally. Returns the chosen Combatant or null. */
+/** Ask the owner to pick an ally via a radio list. Returns the chosen Combatant or null. */
 export async function promptAllySelection(candidates) {
   const DialogV2 = foundry.applications.api.DialogV2;
-  const buttons = candidates.map((c) => ({
-    action: c.id,
-    label: L("dialog.candidate", { name: c.token?.name ?? c.name, init: c.initiative }),
-    callback: () => c.id,
-  }));
-  buttons.push({ action: "cancel", label: game.i18n.localize("Cancel"), default: true, callback: () => null });
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (ch) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  const rows = candidates.map((c, i) => `
+    <label class="ais-row">
+      <input type="radio" name="ally" value="${c.id}"${i === 0 ? " checked" : ""}>
+      <span class="ais-name">${esc(c.token?.name ?? c.name)}</span>
+      <span class="ais-init">${Math.floor(c.initiative)}</span>
+    </label>`).join("");
+  const content = `
+    <style>
+      .ais-list { display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow-y: auto; margin-top: 6px; }
+      .ais-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border: 1px solid var(--color-border-light-tertiary, #b5b3a4); border-radius: 4px; cursor: pointer; }
+      .ais-row:hover { background: rgba(0,0,0,0.06); }
+      .ais-name { flex: 1 1 auto; }
+      .ais-init { flex: 0 0 auto; min-width: 1.5em; text-align: center; font-weight: bold; padding: 1px 9px; border-radius: 10px; background: rgba(0,0,0,0.1); }
+    </style>
+    <p>${L("dialog.pickBody")}</p>
+    <div class="ais-list">${rows}</div>`;
+  const selected = (button, dialog) => {
+    const root = dialog?.element ?? button?.form ?? button?.closest?.("form");
+    return root?.querySelector?.('input[name="ally"]:checked')?.value ?? null;
+  };
   const choice = await DialogV2.wait({
     window: { title: L("dialog.pickTitle") },
-    content: `<p>${L("dialog.pickBody")}</p>`,
-    buttons,
+    content,
+    buttons: [
+      { action: "swap", label: L("dialog.swap"), icon: "fa-solid fa-right-left", default: true,
+        callback: (event, button, dialog) => selected(button, dialog) },
+      { action: "cancel", label: game.i18n.localize("Cancel"), icon: "fa-solid fa-xmark",
+        callback: () => null },
+    ],
     rejectClose: false,
   }).catch(() => null);
-  if (!choice || choice === "cancel") return null;
+  if (!choice) return null;
   return candidates.find((c) => c.id === choice) ?? null;
 }
 
