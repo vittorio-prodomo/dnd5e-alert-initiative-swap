@@ -67,29 +67,32 @@ export function pickResponsibleUser(actor, { users, activeGM }) {
 }
 
 /**
- * Decide which combatant (if any) the current client should prompt for, given the
- * dnd5e.rollInitiative hook shape `(actor, combatants)`. Pure — every piece of
- * environment is injected — so the whole auto-prompt gate is unit-testable.
- * Returns the combatant to prompt for, or null.
+ * Every (actor, combatant) pair in the combat that THIS client should prompt for.
+ * Pure — all environment injected. Called on any initiative change (the
+ * `updateCombatant` hook), so it catches every roll path (individual, "Roll All",
+ * "Roll NPC", Epic Rolls' `combatant.update({initiative})`, manual entry) and is
+ * order-independent: a target surfaces as soon as an Alert holder AND an eligible
+ * ally are both rolled, regardless of which one rolled last.
  * @param {object} p
- * @param {any} p.actor            The actor that rolled (hook arg 1).
- * @param {any[]} p.combatants     That actor's combatants (hook arg 2).
- * @param {any} p.combat           The Combat (derive from a combatant's parent).
+ * @param {any} p.combat           The Combat.
  * @param {string} p.currentUserId game.user.id
  * @param {any[]} p.users          game.users.contents
  * @param {any} p.activeGM         game.users.activeGM
  * @param {(combatId: string, combatantId: string) => boolean} p.isPrompted one-shot check
+ * @returns {{actor: any, combatant: any}[]}
  */
-export function pickPromptCombatant({ actor, combatants, combat, currentUserId, users, activeGM, isPrompted }) {
-  if (!actor || !hasAlert(actor) || !actor.hasPlayerOwner) return null;
-  if (!combat || combat.started) return null;
-  for (const combatant of combatants ?? []) {
+export function collectPromptTargets({ combat, currentUserId, users, activeGM, isPrompted }) {
+  if (!combat || combat.started) return [];
+  const out = [];
+  for (const combatant of combat.combatants ?? []) {
+    const actor = combatant.actor;
+    if (!actor || !hasAlert(actor) || !actor.hasPlayerOwner) continue;
     if (!isWindowOpen(combat, combatant)) continue;
     if (!getSwapCandidates(combat, combatant).length) continue;
     const prompter = pickResponsibleUser(actor, { users, activeGM });
     if (!prompter || currentUserId !== prompter.id) continue;
     if (isPrompted(combat.id, combatant.id)) continue;
-    return combatant;
+    out.push({ actor, combatant });
   }
-  return null;
+  return out;
 }

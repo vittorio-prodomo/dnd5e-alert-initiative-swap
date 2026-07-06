@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   getAlertFeat, hasAlert, isIncapacitated, isWindowOpen,
-  getSwapCandidates, swapInitiative, pickResponsibleUser, pickPromptCombatant,
+  getSwapCandidates, swapInitiative, pickResponsibleUser, collectPromptTargets,
 } from "../scripts/swap.js";
 
 const mkActor = ({ items = [], statuses = [], perm } = {}) => ({
@@ -72,31 +72,38 @@ test("pickResponsibleUser prefers active non-GM owners (lowest id), else active 
   assert.equal(pickResponsibleUser(actor, { users: [offline, gm], activeGM: gm }).id, "g");
 });
 
-test("pickPromptCombatant gates on the dnd5e (actor, combatants) shape + prompter/candidate/window", () => {
-  const warpeyActor = {
+test("collectPromptTargets scans the combat for eligible Alert holders (any roll path, order-independent)", () => {
+  const alertActor = (over = {}) => ({
     items: [{ type: "feat", system: { identifier: "alert" } }],
-    hasPlayerOwner: true, statuses: new Set(), testUserPermission: () => false,
-  };
+    hasPlayerOwner: true, statuses: new Set(), testUserPermission: () => false, ...over,
+  });
   const gm = { id: "g", active: true, isGM: true };
-  const owner = { id: "wc", initiative: 8, token: { disposition: 1 }, actor: warpeyActor };
-  const ally = { id: "xc", initiative: 19, token: { disposition: 1 }, actor: { statuses: new Set() } };
-  const combat = { id: "cbt", started: false, combatants: [owner, ally] };
-  const base = {
-    actor: warpeyActor, combatants: [owner], combat,
-    currentUserId: "g", users: [gm], activeGM: gm, isPrompted: () => false,
-  };
-  // happy path: GM is the fallback prompter, ally is a candidate -> prompt for the owner's combatant
-  assert.equal(pickPromptCombatant(base)?.id, "wc");
-  // no eligible ally in the combat -> null
-  assert.equal(pickPromptCombatant({ ...base, combat: { id: "c2", started: false, combatants: [owner] } }), null);
-  // combat already started -> null
-  assert.equal(pickPromptCombatant({ ...base, combat: { ...combat, started: true } }), null);
-  // this client isn't the chosen prompter -> null
-  assert.equal(pickPromptCombatant({ ...base, currentUserId: "someone-else" }), null);
-  // already prompted this combat -> null
-  assert.equal(pickPromptCombatant({ ...base, isPrompted: () => true }), null);
-  // GM-only actor (no player owner) -> null
-  assert.equal(pickPromptCombatant({ ...base, actor: { ...warpeyActor, hasPlayerOwner: false } }), null);
-  // actor without Alert -> null
-  assert.equal(pickPromptCombatant({ ...base, actor: { ...warpeyActor, items: [] } }), null);
+  const mkC = (id, init, disp, actor) => ({ id, initiative: init, token: { disposition: disp }, actor });
+  const warpey = alertActor();
+  const wc = mkC("wc", 8, 1, warpey);
+  const ally = mkC("xc", 19, 1, { statuses: new Set() });
+  const combat = { id: "cbt", started: false, combatants: [wc, ally] };
+  const base = { combat, currentUserId: "g", users: [gm], activeGM: gm, isPrompted: () => false };
+
+  // both rolled + GM is the fallback prompter -> Warpey targeted (regardless of which update fired)
+  const t = collectPromptTargets(base);
+  assert.equal(t.length, 1);
+  assert.equal(t[0].combatant.id, "wc");
+  assert.equal(t[0].actor, warpey);
+
+  // ally not rolled yet -> no candidate -> none
+  assert.deepEqual(collectPromptTargets({ ...base, combat: { id: "c2", started: false, combatants: [wc, mkC("xc", null, 1, { statuses: new Set() })] } }), []);
+  // combat already started -> none
+  assert.deepEqual(collectPromptTargets({ ...base, combat: { ...combat, started: true } }), []);
+  // this client isn't the chosen prompter -> none
+  assert.deepEqual(collectPromptTargets({ ...base, currentUserId: "other" }), []);
+  // already prompted -> none
+  assert.deepEqual(collectPromptTargets({ ...base, isPrompted: () => true }), []);
+  // GM-only Alert holder (no player owner) -> excluded
+  const gmOnly = mkC("gc", 5, 1, alertActor({ hasPlayerOwner: false }));
+  assert.deepEqual(collectPromptTargets({ ...base, combat: { id: "c3", started: false, combatants: [gmOnly, ally] } }), []);
+
+  // two eligible Alert holders (this client prompter for both) -> both targeted
+  const nc = mkC("nc", 12, 1, alertActor());
+  assert.equal(collectPromptTargets({ ...base, combat: { id: "c4", started: false, combatants: [wc, nc, ally] } }).length, 2);
 });
