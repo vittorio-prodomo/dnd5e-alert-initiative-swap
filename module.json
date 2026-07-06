@@ -1,0 +1,17 @@
+{
+  "id": "dnd5e-alert-initiative-swap",
+  "title": "Alert Initiative Swap (2024)",
+  "description": "Surfaces the 2024 Alert feat's initiative swap as a Visual Active Effects button and an optional post-roll prompt.",
+  "version": "0.1.0",
+  "authors": [{ "name": "Vittorio" }],
+  "compatibility": { "minimum": "13", "verified": "13" },
+  "relationships": {
+    "systems": [{ "id": "dnd5e", "type": "system", "compatibility": { "minimum": "5" } }],
+    "recommends": [{ "id": "visual-active-effects", "type": "module" }]
+  },
+  "esmodules": ["scripts/module.js"],
+  "languages": [
+    { "lang": "en", "name": "English", "path": "lang/en.json" },
+    { "lang": "it", "name": "Italiano", "path": "lang/it.json" }
+  ]
+}
