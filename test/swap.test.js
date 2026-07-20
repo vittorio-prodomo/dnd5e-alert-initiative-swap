@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  getAlertFeat, hasAlert, isIncapacitated, isWindowOpen,
+  getAlertFeat, hasAlert, isIncapacitated, isSummonedCreature, isWindowOpen,
   getSwapCandidates, swapInitiative, pickResponsibleUser, collectPromptTargets,
 } from "../scripts/swap.js";
 
@@ -106,4 +106,21 @@ test("collectPromptTargets scans the combat for eligible Alert holders (any roll
   // two eligible Alert holders (this client prompter for both) -> both targeted
   const nc = mkC("nc", 12, 1, alertActor());
   assert.equal(collectPromptTargets({ ...base, combat: { id: "c4", started: false, combatants: [wc, nc, ally] } }).length, 2);
+});
+
+test("isSummonedCreature reads the chris-premades summon flag", () => {
+  assert.equal(isSummonedCreature({ flags: { "chris-premades": { summons: { control: { actor: "Actor.x" } } } } }), true);
+  assert.equal(isSummonedCreature(mkActor()), false);
+  assert.equal(isSummonedCreature(null), false);
+});
+
+test("getSwapCandidates excludes summoned creatures (the companion beast)", () => {
+  const summonActor = () => ({ items: [], statuses: new Set(), flags: { "chris-premades": { summons: { control: { actor: "Actor.hunter" } } } } });
+  const owner = mkCombatant({ id: "o", initiative: 10, disposition: 1 });
+  const ally = mkCombatant({ id: "a", initiative: 15, disposition: 1 });
+  const beast = mkCombatant({ id: "b", initiative: 9.99, disposition: 1, actor: summonActor() });
+  // a valid ally survives; the summoned beast is filtered out
+  assert.deepEqual(getSwapCandidates({ combatants: [owner, ally, beast] }, owner).map((c) => c.id), ["a"]);
+  // when the beast is the ONLY other combatant, no candidates remain -> collectPromptTargets won't prompt
+  assert.deepEqual(getSwapCandidates({ combatants: [owner, beast] }, owner), []);
 });

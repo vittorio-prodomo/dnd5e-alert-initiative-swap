@@ -20,6 +20,16 @@ export function isIncapacitated(actor) {
   return !!actor?.statuses?.has?.("incapacitated");
 }
 
+/**
+ * A CPR-summoned creature (the Beast Master's Beast of the Land, Flaming Sphere, Mage Hand, …). These are
+ * not valid Alert initiative-swap targets — you swap with a willing party member, not your own summon (and
+ * the companion beast is initiative-locked right behind its hunter anyway, so a swap is meaningless). Detected
+ * structurally via the chris-premades summon flag, so there is no hard CPR dependency.
+ */
+export function isSummonedCreature(actor) {
+  return !!actor?.flags?.["chris-premades"]?.summons?.control?.actor;
+}
+
 /** Is the pre-combat swap window open for this owner combatant? */
 export function isWindowOpen(combat, ownerCombatant) {
   if (!combat || combat.started) return false;
@@ -40,6 +50,7 @@ export function getSwapCandidates(combat, ownerCombatant) {
     if (c.initiative === null || c.initiative === undefined) continue;
     if (c.token?.disposition !== ownerDisp) continue;
     if (!c.actor || isIncapacitated(c.actor)) continue;
+    if (isSummonedCreature(c.actor)) continue; // never offer a summon (e.g. the companion beast) as a swap target
     out.push(c);
   }
   return out;
