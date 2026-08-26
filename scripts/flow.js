@@ -28,16 +28,6 @@ export async function promptAllySelection(candidates, ownerName) {
       <td class="ais-init">${Math.floor(c.initiative)}</td>
     </tr>`).join("");
   const content = `
-    <style>
-      .ais-scroll { max-height: 320px; overflow-y: auto; margin-top: 6px; }
-      .ais-table { width: 100%; border-collapse: collapse; }
-      .ais-table th { text-align: left; padding: 3px 8px; border-bottom: 2px solid var(--color-border-dark, #7a7971); }
-      .ais-table td { padding: 4px 8px; border-bottom: 1px solid var(--color-border-light-tertiary, #c9c7ba); }
-      .ais-row { cursor: pointer; }
-      .ais-row:hover { background: rgba(0,0,0,0.06); }
-      .ais-radio { width: 1.5em; text-align: center; }
-      .ais-table th.ais-init, td.ais-init { text-align: right; font-weight: bold; font-variant-numeric: tabular-nums; }
-    </style>
     <p>${L("dialog.pickBody")}</p>
     <div class="ais-scroll">
       <table class="ais-table">

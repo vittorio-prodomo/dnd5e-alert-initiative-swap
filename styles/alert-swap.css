@@ -1,0 +1,21 @@
+/* dnd5e-alert-initiative-swap — dialog styling. Lives here because DialogV2 STRIPS <style>
+   tags from dialog content (verified live 2026-08-26): the rules below previously sat inline
+   in flow.js and silently never applied. */
+.ais-scroll { max-height: 320px; overflow-y: auto; margin-top: 6px; }
+.ais-table { width: 100%; border-collapse: collapse; }
+.ais-table th { text-align: left; padding: 3px 8px; border-bottom: 2px solid var(--color-border-dark, #7a7971); }
+.ais-table td { padding: 4px 8px; border-bottom: 1px solid var(--color-border-light-tertiary, #c9c7ba); }
+.ais-row { cursor: pointer; }
+.ais-row:hover { background: rgba(0, 0, 0, 0.06); }
+.ais-radio { width: 1.5em; text-align: center; }
+/* Table pass 2026-08-26: unchecked radios were INVISIBLE — the core unchecked glyph
+   (fa-circle via ::before) arrives with empty content and a near-background color in this
+   dialog, so nothing marks the rows as a radio list until one is selected. Draw the
+   unchecked circle ourselves in a visible light tone; the checked state keeps core's dot. */
+.ais-radio input[type="radio"]:not(:checked)::before {
+  content: "\f111";
+  font-family: var(--font-awesome, "Font Awesome 6 Pro");
+  font-weight: var(--checkbox-font-weight, bold);
+  color: var(--color-light-4, #999);
+}
+.ais-table th.ais-init, td.ais-init { text-align: right; font-weight: bold; font-variant-numeric: tabular-nums; }
