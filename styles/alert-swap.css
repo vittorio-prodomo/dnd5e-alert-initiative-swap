@@ -4,10 +4,25 @@
 .ais-scroll { max-height: 320px; overflow-y: auto; margin-top: 6px; }
 .ais-table { width: 100%; border-collapse: collapse; }
 .ais-table th { text-align: left; padding: 3px 8px; border-bottom: 2px solid var(--color-border-dark, #7a7971); }
-.ais-table td { padding: 4px 8px; border-bottom: 1px solid var(--color-border-light-tertiary, #c9c7ba); }
+.ais-table td { padding: 6px 8px; border-bottom: 1px solid var(--color-border-light-tertiary, #c9c7ba); }
 .ais-row { cursor: pointer; }
 .ais-row:hover { background: rgba(0, 0, 0, 0.06); }
 .ais-radio { width: 1.5em; text-align: center; }
+/* Table pass 2026-08-27: unchecked rows sat too short and the radio drifted off-centre,
+   snapping into place only once something was selected. ⚠️ Core sizes these inputs purely
+   through the pseudo-element and only adds `position: relative` on `:checked`
+   (foundry2.css:3540), so the UNCHECKED input has no box of its own and the row collapses
+   around it. Give it the same geometry in both states so nothing moves on selection. */
+.ais-radio input[type="radio"] {
+  display: inline-block;
+  position: relative;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  margin: 0;
+  vertical-align: middle;
+}
+.ais-radio input[type="radio"]::before { display: block; }
+.ais-table td, .ais-table th { vertical-align: middle; }
 /* Table pass 2026-08-26: unchecked radios were INVISIBLE — the core unchecked glyph
    (fa-circle via ::before) arrives with empty content and a near-background color in this
    dialog, so nothing marks the rows as a radio list until one is selected. Draw the
