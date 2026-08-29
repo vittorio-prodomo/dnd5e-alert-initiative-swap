@@ -21,13 +21,14 @@ export function isIncapacitated(actor) {
 }
 
 /**
- * A CPR-summoned creature (the Beast Master's Beast of the Land, Flaming Sphere, Mage Hand, …). These are
- * not valid Alert initiative-swap targets — you swap with a willing party member, not your own summon (and
- * the companion beast is initiative-locked right behind its hunter anyway, so a swap is meaningless). Detected
- * structurally via the chris-premades summon flag, so there is no hard CPR dependency.
+ * A summoned creature (a CPR summon — Flaming Sphere, Mage Hand, … — or dnd5e's own native summon, e.g.
+ * the Beast Master's Primal Companion beast, rebuilt on dnd5e's Summon activity). These are not valid Alert
+ * initiative-swap targets — you swap with a willing party member, not your own summon (and the companion
+ * beast is initiative-locked right behind its hunter anyway, so a swap is meaningless). Detected structurally
+ * via the chris-premades summon flag OR dnd5e's own `flags.dnd5e.summon`, so there is no hard CPR dependency.
  */
 export function isSummonedCreature(actor) {
-  return !!actor?.flags?.["chris-premades"]?.summons?.control?.actor;
+  return !!actor?.flags?.["chris-premades"]?.summons?.control?.actor || Boolean(actor?.flags?.dnd5e?.summon);
 }
 
 /** Is the pre-combat swap window open for this owner combatant? */

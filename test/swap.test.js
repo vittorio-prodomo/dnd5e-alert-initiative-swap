@@ -114,6 +114,13 @@ test("isSummonedCreature reads the chris-premades summon flag", () => {
   assert.equal(isSummonedCreature(null), false);
 });
 
+test("isSummonedCreature also reads dnd5e's own native summon flag (no CPR flags present)", () => {
+  // The Primal Companion native rebuild summons via dnd5e's own Summon activity —
+  // no chris-premades flags at all, just flags.dnd5e.summon on the beast actor.
+  assert.equal(isSummonedCreature({ flags: { dnd5e: { summon: { origin: "Actor.hunter.Item.beast" } } } }), true);
+  assert.equal(isSummonedCreature(mkActor()), false);
+});
+
 test("getSwapCandidates excludes summoned creatures (the companion beast)", () => {
   const summonActor = () => ({ items: [], statuses: new Set(), flags: { "chris-premades": { summons: { control: { actor: "Actor.hunter" } } } } });
   const owner = mkCombatant({ id: "o", initiative: 10, disposition: 1 });
